@@ -1,0 +1,23 @@
+[project]
+name = "webgcs-server"
+version = "0.1.0"
+description = "MAVLink -> WebSocket telemetry bridge for the webgcs mini ground control station"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["server"]
+ignore_missing_imports = true
+disallow_untyped_defs = true
