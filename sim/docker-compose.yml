@@ -1,0 +1,40 @@
+# ArduCopter SITL (Software In The Loop) for local development.
+#
+# Boots a simulated ArduCopter flight controller and exposes its raw
+# MAVLink stream on TCP 5760, which is what `server/bridge.py` connects
+# to by default (see `WEBGCS_MAVLINK_CONNECTION` in server/config.py).
+#
+# Usage:
+#   cd sim && docker compose up
+#
+# First run builds/starts ArduCopter inside the container and can take
+# several minutes; subsequent runs are fast. Once you see
+# "APM: EKF3 IMU0 initialised" (or similar) in the logs, the bridge can
+# connect. In the SITL console (attach with `docker compose attach
+# ardupilot-sitl` or via the exposed MAVProxy port) you can then run:
+#   mode guided
+#   arm throttle
+#   takeoff 20
+#
+# Note: `--no-mavproxy` makes the SITL binary itself the sole listener
+# on tcp:5760, which is fine for a single consumer like this bridge.
+# If you also want MAVProxy or QGroundControl connected at the same
+# time, drop that flag and add a MAVLink router/mavproxy service to
+# fan the stream out to multiple clients.
+services:
+  ardupilot-sitl:
+    image: ardupilot/ardupilot:latest
+    container_name: webgcs-sitl
+    ports:
+      - "5760:5760" # MAVLink TCP, consumed by server/bridge.py
+    working_dir: /ardupilot
+    command: >
+      bash -c "
+        Tools/autotest/sim_vehicle.py
+        -v ArduCopter
+        -f quad
+        --no-rebuild
+        --no-mavproxy
+        -l 35.363262,149.165237,584,0
+      "
+    restart: unless-stopped
